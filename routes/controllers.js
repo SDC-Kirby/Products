@@ -26,5 +26,16 @@ module.exports = {
       }
       res.send(data);
     })
+  },
+
+  getStyles: (req, res) => {
+    productId = req.params.productId;
+
+    models.readStyles(productId, (err, data) => {
+      if (err) {
+        console.error(err);
+      }
+      res.send(data);
+    })
   }
 }

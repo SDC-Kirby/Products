@@ -38,5 +38,31 @@ module.exports = {
         callback(null, data[0]);
       })
       .catch(err => callback(err))
+  },
+
+  readStyles: (productId, callback) => {
+    var styles = { product_id: productId, results: [] };
+
+    var queryString = `SELECT * FROM styles JOIN photos ON styles.product_id=${productId} AND photos.style_id = styles.style_id;`;
+
+    db.query(queryString)
+      .then((res) => {
+        data = res.rows;
+
+        for (let i = 0; i < data.length; i++) {
+          let stylesTemp = {
+            styles_id: data[i]['styles_id'],
+            name: data[i].name,
+            sale_price: data[i]['sale_price'],
+            original_price: data[i]['original_price'],
+            default_style: data[i]['default_style']
+          };
+          styles.results.push(stylesTemp);
+        }
+
+        callback(null, data);
+      })
+      .catch(err => callback(err));
+
   }
 }
