@@ -15,15 +15,19 @@ module.exports = {
 
   readProduct: (productId, callback) => {
 
-    var queryString = `SELECT
-                      products.id,          products.name,      products.slogan,
-                      products.description, products.category,  products.default_price,
-                      features.feature,     features.value
-                      FROM products JOIN features ON products.id=${productId} AND features.product_id=${productId}`;
+    var queryString =
+    `SELECT
+    products.id,          products.name,      products.slogan,
+    products.description, products.category,  products.default_price,
+    features.feature,     features.value
+    FROM products
+    JOIN features
+    ON products.id=${productId}
+    AND features.product_id=${productId}`;
 
     db.query(queryString)
       .then((res) => {
-        var data = res.rows;
+        let data = res.rows;
         data[0].features = [];
 
         for (let i = 0; i < data.length; i++) {
@@ -41,24 +45,54 @@ module.exports = {
   },
 
   readStyles: (productId, callback) => {
-    var styles = { product_id: productId, results: [] };
+    var styles = { product_id: productId };
 
-    var queryString = `SELECT * FROM styles JOIN photos ON styles.product_id=${productId} AND photos.style_id = styles.style_id;`;
+    // SELECT id AS product_id
+    let queryString =
+      `SELECT json_agg(
+        json_build_object(
+          'style_id', styles.id,
+          'name', styles.name,
+          'original_price', styles.original_price,
+          'sale_price', styles.sale_price,
+          'default?', styles.default_style,
+          'photos', (SELECT json_agg(json_build_object(
+            'thumbnail_url', photos.thumbnail_url,
+            'url', photos.url
+          )) AS photos FROM photos WHERE photos.style_id=styles.id),
+          'skus', (SELECT json_object_agg(
+            skus.id, json_build_object(
+              'quantity', skus.quantity,
+              'size', skus.size
+            )
+          ) AS skus FROM skus WHERE skus.style_id=styles.id)
+        )
+      ) AS results FROM styles WHERE product_id=${productId};`
+    db.query(queryString)
+      .then((res) => {
+
+        let data = res.rows[0];
+
+        styles.results = data.results;
+
+        callback(null, styles);
+      })
+      .catch(err => callback(err));
+
+  },
+
+  readRelated: (productId, callback) => {
+
+    let queryString =
+    `SELECT json_agg(related_product_id)
+    AS results
+    FROM related
+    WHERE current_product_id=${productId}`
 
     db.query(queryString)
       .then((res) => {
-        data = res.rows;
 
-        for (let i = 0; i < data.length; i++) {
-          let stylesTemp = {
-            styles_id: data[i]['styles_id'],
-            name: data[i].name,
-            sale_price: data[i]['sale_price'],
-            original_price: data[i]['original_price'],
-            default_style: data[i]['default_style']
-          };
-          styles.results.push(stylesTemp);
-        }
+        let data = res.rows[0].results;
 
         callback(null, data);
       })

@@ -18,7 +18,7 @@ module.exports = {
 
   getProduct: (req, res) => {
 
-    productId = req.params.productId;
+    let productId = req.params.productId;
 
     models.readProduct(productId, (err, data) => {
       if (err) {
@@ -29,9 +29,22 @@ module.exports = {
   },
 
   getStyles: (req, res) => {
-    productId = req.params.productId;
+
+    let productId = req.params.productId;
 
     models.readStyles(productId, (err, data) => {
+      if (err) {
+        console.error(err);
+      }
+      res.send(data);
+    })
+  },
+
+  getRelated: (req, res) => {
+
+    let productId = req.params.productId;
+
+    models.readRelated(productId, (err, data) => {
       if (err) {
         console.error(err);
       }

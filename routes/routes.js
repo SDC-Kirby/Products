@@ -5,5 +5,7 @@ var router = require('express').Router();
 router.get('/', controller.getAllProducts);
 router.get('/:productId', controller.getProduct);
 router.get('/:productId/styles', controller.getStyles);
+router.get('/:productId/related', controller.getRelated);
+
 
 module.exports = router;
