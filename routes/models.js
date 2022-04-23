@@ -16,30 +16,30 @@ module.exports = {
   readProduct: (productId, callback) => {
 
     var queryString =
-    `SELECT
-    products.id,          products.name,      products.slogan,
-    products.description, products.category,  products.default_price,
-    features.feature,     features.value
-    FROM products
-    JOIN features
-    ON products.id=${productId}
-    AND features.product_id=${productId}`;
+    `SELECT json_build_object(
+      'id', id,
+      'name', name,
+      'slogan', slogan,
+      'description', description,
+      'category', category,
+      'default_price', default_price,
+      'features', (
+        SELECT json_agg(
+          json_build_object(
+            'feature', feature,
+            'value', value
+          )
+        ) FROM features WHERE product_id=${productId}
+      )
+    )
+    AS results
+    FROM products WHERE id=${productId}`
 
     db.query(queryString)
       .then((res) => {
-        let data = res.rows;
-        data[0].features = [];
+        let data = res.rows[0].results;
 
-        for (let i = 0; i < data.length; i++) {
-          var temp = {
-            feature: data[i].feature,
-            value: data[i].value
-          }
-          data[0].features.push(temp);
-        }
-        delete data[0].feature;
-        delete data[0].value;
-        callback(null, data[0]);
+        callback(null, data);
       })
       .catch(err => callback(err))
   },
@@ -47,7 +47,7 @@ module.exports = {
   readStyles: (productId, callback) => {
     var styles = { product_id: productId };
 
-    // SELECT id AS product_id
+
     let queryString =
       `SELECT json_agg(
         json_build_object(
