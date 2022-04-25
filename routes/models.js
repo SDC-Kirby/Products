@@ -4,7 +4,7 @@ module.exports = {
 
   readAllProducts: (count, callback) => {
 
-    var queryString = `SELECT * FROM products LIMIT ${count};`;
+    var queryString = `SELECT * FROM products LIMIT ${count}`;
 
     db.query(queryString)
       .then((res) => {
@@ -67,7 +67,7 @@ module.exports = {
             )
           ) AS skus FROM skus WHERE skus.style_id=styles.id)
         )
-      ) AS results FROM styles WHERE product_id=${productId};`
+      ) AS results FROM styles WHERE product_id=${productId}`
     db.query(queryString)
       .then((res) => {
 
