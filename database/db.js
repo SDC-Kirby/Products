@@ -3,10 +3,10 @@ const fs = require('fs');
 const config = require('../config');
 
 const db = new Client({
-  user: 'rvtaylor',
-  host: 'localhost',
+  user: 'postgres',
+  host: '54.153.24.197',
   database: 'sdc',
-  password: config.PASSWORD,
+  password: '',
   port: 5432,
 });
 
